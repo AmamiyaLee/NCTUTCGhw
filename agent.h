@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "board.h"
 #include "action.h"
-
+#include <vector>
 class agent {
 public:
 	agent(const std::string& args = "") {
@@ -56,27 +56,53 @@ protected:
 /**
  * random environment
  * add a new random tile to an empty cell
- * 2-tile: 90%
- * 4-tile: 10%
+ * tile bag>> {1,2,3} and only refill when its empty({0,0,0} since its an array and cant delete element)
+ * pick a random one from tile bag
  */
 class rndenv : public random_agent {
 public:
+    std::vector<int> tilebag;
+     const int tilebagarr[3]={1,2,3};
 	rndenv(const std::string& args = "") : random_agent("name=random role=environment " + args),
-		space({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }), popup(0, 9) {}
+    down({ 0, 1, 2, 3}),up({12,13,14,15}),left({3,7,11,15}),right({0,4,8,12}) {
+            tilebag.assign(tilebagarr,tilebagarr+3);
+        }
 
 	virtual action take_action(const board& after) {
-		std::shuffle(space.begin(), space.end(), engine);
+        std::array<int,4> space;
+        if(tilebag.empty()){
+            tilebag.assign(tilebagarr,tilebagarr+3);
+        }
+		
+        if(after.last_dir==0){
+            space=left;
+        }
+        else if(after.last_dir==1){
+            space=right;
+        }
+        else if(after.last_dir==2){
+            space=up;
+        }
+        else{
+            space=down;
+        }
+        std::shuffle(space.begin(), space.end(), engine);
 		for (int pos : space) {
 			if (after(pos) != 0) continue;
-			board::cell tile = popup(engine) ? 1 : 2;
-			return action::place(pos, tile);
+            std::shuffle(tilebag.begin(),tilebag.end(),engine);
+			board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!
+            tilebag.erase(tilebag.begin());
+            return action::place(pos, tile);
 		}
+ 
 		return action();
 	}
 
 private:
-	std::array<int, 16> space;
-	std::uniform_int_distribution<int> popup;
+	std::array<int, 4> left,right,up,down;
+	
+    
+    
 };
 
 /**

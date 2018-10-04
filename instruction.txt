@@ -15,3 +15,7 @@ $ ./2048 --save=stat.txt # existing file will be overwrited
 
 To load and review the statistic result from a file
 $ ./2048 --load=stat.txt
+5413 c=0 >> hold=5 
+0413 c=1 >> 5413 hold=4
+5013 c=2 >> tile=1>>tile!=hold but hold!=1 && hold!=2 >>row[1]=hold=4 hold=1>>5413
+5403 c=3 >> tile=3>>tile!= hold>> row[2]=hold=1 5413>>hold=tile=3

@@ -46,15 +46,32 @@ public:
 	bool operator >=(const board& b) const { return !(*this < b); }
 
 public:
+    int last_dir;
+    
+public:
 
 	/**
 	 * place a tile (index value) to the specific position (1-d form index)
 	 * return 0 if the action is valid, or -1 if not
 	 */
+    enum Dir{LEFT,RIGHT,UP,DOWN};
 	reward place(unsigned pos, cell tile) {
 		if (pos >= 16) return -1;
-		if (tile != 1 && tile != 2) return -1;
-		operator()(pos) = tile;
+		if (tile != 1 && tile != 2&&tile != 3) return -1;
+        
+		
+//        std::cout<<"+-------------------------+"<<std::endl;
+//        std::cout<<operator()(0)<<" "<<operator()(1)<<" "<<operator()(2)<<" "<<operator()(3)<<" "<<std::endl;
+//        std::cout<<operator()(4)<<" "<<operator()(5)<<" "<<operator()(6)<<" "<<operator()(7)<<" "<<std::endl;
+//        std::cout<<operator()(8)<<" "<<operator()(9)<<" "<<operator()(10)<<" "<<operator()(11)<<" "<<std::endl;
+//        std::cout<<operator()(12)<<" "<<operator()(13)<<" "<<operator()(14)<<" "<<operator()(5)<<" "<<std::endl;
+        operator()(pos) = tile;
+//        std::cout<<"Placed "<<tile << " on position ["<<pos<<"]"<<std::endl;
+//        std::cout<<operator()(0)<<" "<<operator()(1)<<" "<<operator()(2)<<" "<<operator()(3)<<" "<<std::endl;
+//        std::cout<<operator()(4)<<" "<<operator()(5)<<" "<<operator()(6)<<" "<<operator()(7)<<" "<<std::endl;
+//        std::cout<<operator()(8)<<" "<<operator()(9)<<" "<<operator()(10)<<" "<<operator()(11)<<" "<<std::endl;
+//        std::cout<<operator()(12)<<" "<<operator()(13)<<" "<<operator()(14)<<" "<<operator()(5)<<" "<<std::endl;
+//        std::cout<<"+-------------------------+"<<std::endl;
 		return 0;
 	}
 
@@ -63,6 +80,7 @@ public:
 	 * return the reward of the action, or -1 if the action is illegal
 	 */
 	reward slide(unsigned opcode) {
+        //std::cout<<"this move is :"<<opcode<<std::endl;
 		switch (opcode & 0b11) {
 		case 0: return slide_up();
 		case 1: return slide_right();
@@ -73,14 +91,21 @@ public:
 	}
 
 	reward slide_left() {
+        
 		board prev = *this;
 		reward score = 0;
 		for (int r = 0; r < 4; r++) {
 			auto& row = tile[r];
-			int top = 0, hold = 0;
+			int  hold = 0;
 			for (int c = 0; c < 4; c++) {
 				int tile = row[c];
-				if (tile == 0) continue;
+                if (tile == 0) {
+                    if(c!=0){
+                    row[c-1] = hold;
+                    hold = tile;
+                    }
+                    continue;
+                }
 				row[c] = 0;
 				if (hold) {
                     if(tile==1||tile==2){
@@ -105,29 +130,46 @@ public:
 					}
                     }
 				} else {
+                    if(c!=0){
+                        row[c-1]=tile;
+                        hold=0;
+                    }
+                    else{
 					hold = tile;
+                    }
 				}
 			}
-			//if (hold) tile[r][top] = hold;
+            if (hold){
+                if(tile[r][2]==0)
+                tile[r][2] = hold;
+                else{
+                    tile[r][3]=hold;
+                }
+            }
 		}
+        
+        last_dir=LEFT;
 		return (*this != prev) ? score : -1;
 	}
 	reward slide_right() {
 		reflect_horizontal();
 		reward score = slide_left();
 		reflect_horizontal();
+        last_dir=RIGHT;
 		return score;
 	}
 	reward slide_up() {
 		rotate_right();
 		reward score = slide_right();
 		rotate_left();
+        last_dir=UP;
 		return score;
 	}
 	reward slide_down() {
 		rotate_right();
 		reward score = slide_left();
 		rotate_left();
+        last_dir=DOWN;
 		return score;
 	}
 
