@@ -73,6 +73,19 @@ public:
         if(tilebag.empty()){
             tilebag.assign(tilebagarr,tilebagarr+3);
         }
+        if(after.last_dir==5){
+            tilebag.clear();
+            tilebag.assign(tilebagarr,tilebagarr+3);
+            std::array<int,16> spacearr={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+            std::shuffle(spacearr.begin(), spacearr.end(), engine);
+            for (int pos : spacearr) {
+                if (after(pos) != 0) continue;
+                std::shuffle(tilebag.begin(),tilebag.end(),engine);
+                board::cell tile = tilebag[0];
+                tilebag.erase(tilebag.begin());
+                return action::place(pos, tile);
+            }
+        }
 		
         if(after.last_dir==0){
             space=left;
@@ -83,11 +96,26 @@ public:
         else if(after.last_dir==2){
             space=up;
         }
-        else{
+        else if(after.last_dir==3){
             space=down;
+        }
+        else if(after.last_dir==4){
+            if(tilebag.empty()){
+                tilebag.assign(tilebagarr,tilebagarr+3);
+            }
+            std::array<int,16> spacearr={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+            std::shuffle(spacearr.begin(), spacearr.end(), engine);
+            for (int pos : spacearr) {
+                if (after(pos) != 0) continue;
+                std::shuffle(tilebag.begin(),tilebag.end(),engine);
+                board::cell tile = tilebag[0];
+                tilebag.erase(tilebag.begin());
+                return action::place(pos, tile);
+            }
         }
         std::shuffle(space.begin(), space.end(), engine);
 		for (int pos : space) {
+            
 			if (after(pos) != 0) continue;
             std::shuffle(tilebag.begin(),tilebag.end(),engine);
 			board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!

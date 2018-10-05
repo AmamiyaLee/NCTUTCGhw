@@ -46,7 +46,7 @@ public:
 	bool operator >=(const board& b) const { return !(*this < b); }
 
 public:
-    int last_dir;
+    int last_dir=5;
     
 public:
 
@@ -56,6 +56,7 @@ public:
 	 */
     enum Dir{LEFT,RIGHT,UP,DOWN};
 	reward place(unsigned pos, cell tile) {
+        last_dir=4;
 		if (pos >= 16) return -1;
 		if (tile != 1 && tile != 2&&tile != 3) return -1;
         
