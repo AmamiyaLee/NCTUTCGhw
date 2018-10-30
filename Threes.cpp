@@ -15,8 +15,9 @@
 #include "agent.h"
 #include "episode.h"
 #include "statistic.h"
-
+//const std::array<std::array<int, 6>, 32> tupleindexs;
 int main(int argc, const char* argv[]) {
+    
 	std::cout << "Threes!: ";
 	std::copy(argv, argv + argc, std::ostream_iterator<const char*>(std::cout, " "));
 	std::cout << std::endl << std::endl;
@@ -55,7 +56,8 @@ int main(int argc, const char* argv[]) {
 		summary |= stat.is_finished();
 	}
 
-    player play(play_args);
+    tdplayer play(play_args);
+    
     rndenv evil(evil_args);
 
 	while (!stat.is_finished()) {

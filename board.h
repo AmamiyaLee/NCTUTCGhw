@@ -2,7 +2,7 @@
 #include <array>
 #include <iostream>
 #include <iomanip>
-
+#include <math.h>
 /**
  * array-based board for 2048
  *
@@ -95,6 +95,15 @@ public:
         
 		board prev = *this;
 		reward score = 0;
+        int before_s=0;
+        for(int i=0;i<16;i++){
+            if(operator()(i)<3){
+               
+            }
+            else{
+                before_s+=pow(3,(operator()(i)-2));
+                             }
+            }
 		for (int r = 0; r < 4; r++) {
 			auto& row = tile[r];
 			int  hold = 0;
@@ -112,7 +121,7 @@ public:
                     if(tile==1||tile==2){
                         if ((tile != hold)&&(hold==1||hold==2)) {
                             row[c-1] = 3;
-                            score += (1 << tile);
+                            //score += (1 << tile);
                             hold = 0;
                         } else {
                             row[c-1] = hold;
@@ -150,6 +159,16 @@ public:
 		}
         
         last_dir=LEFT;
+        int after_s=0;
+        for(int i=0;i<16;i++){
+            if(operator()(i)<3){
+            
+            }
+            else{
+                after_s+=pow(3,(operator()(i)-2));
+            }
+        }
+        score=after_s-before_s;
 		return (*this != prev) ? score : -1;
 	}
 	reward slide_right() {
