@@ -57,8 +57,11 @@ public:
     enum Dir{LEFT,RIGHT,UP,DOWN};
 	reward place(unsigned pos, cell tile) {
         last_dir=4;
-		if (pos >= 16) return -1;
-		if (tile != 1 && tile != 2&&tile != 3) return -1;
+        if (pos >= 16) {
+            std::cout<<"wrong pos"<<std::endl;
+            return -1;
+        }
+		//if (tile != 1 && tile != 2&&tile != 3) return -1;
         
 		
 //        std::cout<<"+-------------------------+"<<std::endl;

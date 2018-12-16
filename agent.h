@@ -218,7 +218,7 @@ protected:
  */
 class learning_agent : public weight_agent {
 public:
-    learning_agent(const std::string& args = "") : weight_agent(args), alpha(0.1f) {
+    learning_agent(const std::string& args = "") : weight_agent(args), alpha(0.01f) {
         if (meta.find("alpha") != meta.end())
             alpha = float(meta["alpha"]);
     }
@@ -251,21 +251,31 @@ protected:
 class rndenv : public random_agent {
 public:
     std::vector<int> tilebag;
-     const int tilebagarr[3]={1,2,3};
+     const int tilebagarr[12]={1,2,3,1,2,3,1,2,3,1,2,3};
 	rndenv(const std::string& args = "") : random_agent("name=random role=environment " + args),
     down({ 0, 1, 2, 3}),up({12,13,14,15}),left({3,7,11,15}),right({0,4,8,12}) {
-            tilebag.assign(tilebagarr,tilebagarr+3);
+            tilebag.assign(tilebagarr,tilebagarr+12);
         }
 
 	virtual action take_action(const board& after) {
         //std::cout<<"env take action\n";
+        bool bonus=false;
+        int max=0;
         std::array<int,4> space;
         if(tilebag.empty()){
-            tilebag.assign(tilebagarr,tilebagarr+3);
+            tilebag.assign(tilebagarr,tilebagarr+12);
         }
-        if(after.last_dir==5){
+        for(int i=0;i<16;i++){//check if theres a tile>48 1,1 2,2 3,3 4,6 5,12 6,24
+            if(after(i)>=7){
+                bonus=true;
+                if(after(i)>=max){ max=after(i);}
+            }
+        }
+        if(after.last_dir==5){ //dir5=initial a new episode
+            tile_amt=0;
+            bonus_amt=0;
             tilebag.clear();
-            tilebag.assign(tilebagarr,tilebagarr+3);
+            tilebag.assign(tilebagarr,tilebagarr+12);
             std::array<int,16> spacearr={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
             std::shuffle(spacearr.begin(), spacearr.end(), engine);
             for (int pos : spacearr) {
@@ -273,6 +283,7 @@ public:
                 std::shuffle(tilebag.begin(),tilebag.end(),engine);
                 board::cell tile = tilebag[0];
                 tilebag.erase(tilebag.begin());
+                tile_amt++;
                 return action::place(pos, tile);
             }
         }
@@ -291,7 +302,7 @@ public:
         }
         else if(after.last_dir==4){
             if(tilebag.empty()){
-                tilebag.assign(tilebagarr,tilebagarr+3);
+                tilebag.assign(tilebagarr,tilebagarr+12);
             }
             std::array<int,16> spacearr={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
             std::shuffle(spacearr.begin(), spacearr.end(), engine);
@@ -301,23 +312,75 @@ public:
                 board::cell tile = tilebag[0];
                 tilebag.erase(tilebag.begin());
                 return action::place(pos, tile);
+                
+                
             }
         }
         std::shuffle(space.begin(), space.end(), engine);
 		for (int pos : space) {
             
 			if (after(pos) != 0) continue;
-            std::shuffle(tilebag.begin(),tilebag.end(),engine);
-			board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!
-            tilebag.erase(tilebag.begin());
-            return action::place(pos, tile);
+            if(!bonus){
+                std::shuffle(tilebag.begin(),tilebag.end(),engine);
+                board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!
+                tilebag.erase(tilebag.begin());
+                tile_amt++;
+                return action::place(pos, tile);
+            }
+            else{
+                //random bonus tile 1/21
+                std::array<int,21> ran={0};
+                
+                ran[0]=1;
+                std::shuffle(ran.begin(),ran.end(),engine);
+                
+                if(ran[0]==1){
+                //use bonus tile and random from 6 to maxtile/8
+                    float ratio=(bonus_amt+1)/(tile_amt+1);
+                    //std::cout<<tile_amt+1<<" "<<bonus_amt+1<<" ";
+                    //std::cout<<(float)ratio<<"----"<<std::endl;
+                    if(ratio<=(1/21)){
+                        std::vector<int> bonustiles;
+                        for(int b=4;b<max-2;b++){
+                            bonustiles.push_back(b);
+                        
+                        }
+                        
+                        std::shuffle(bonustiles.begin(),bonustiles.end(),engine);
+                        //std::cout<<bonustiles[0]<<"。"<<max<<std::endl;
+                        tile_amt++;
+                        bonus_amt++;
+                        return action::place(pos,bonustiles[0]);
+                    
+                    }
+                    else{
+                        //use tilebag
+                        std::shuffle(tilebag.begin(),tilebag.end(),engine);
+                        board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!
+                        tilebag.erase(tilebag.begin());
+                        tile_amt++;
+                        return action::place(pos, tile);
+                    }
+  
+                }
+                else{
+                 //use tilebag
+                    std::shuffle(tilebag.begin(),tilebag.end(),engine);
+                    board::cell tile = tilebag[0]; //randomly put 2tile or 4tile, need to modify to tile bag for threes!
+                    tilebag.erase(tilebag.begin());
+                    tile_amt++;
+                    return action::place(pos, tile);
+                }
+            }
 		}
- 
+        std::cout<<"fucked up"<<std::endl;
 		return action();
 	}
 
 private:
 	std::array<int, 4> left,right,up,down;
+    int tile_amt;
+    int bonus_amt;
 	
     
     
