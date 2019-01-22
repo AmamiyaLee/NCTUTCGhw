@@ -47,6 +47,10 @@ public:
 
 public:
     int last_dir=5;
+    int hint;
+    std::array<int,3> bag;
+    int total_amt;
+    int bonus_amt;
     
 public:
 
@@ -54,7 +58,7 @@ public:
 	 * place a tile (index value) to the specific position (1-d form index)
 	 * return 0 if the action is valid, or -1 if not
 	 */
-    enum Dir{LEFT,RIGHT,UP,DOWN};
+    enum Dir{LEFT,RIGHT,UP,DOWN}; //left=0 right=1 up=2 down=3
 	reward place(unsigned pos, cell tile) {
         last_dir=4;
         if (pos >= 16) {
@@ -95,6 +99,8 @@ public:
 	}
 
 	reward slide_left() {
+
+		
         
 		board prev = *this;
 		reward score = 0;
@@ -236,11 +242,14 @@ public:
 	void reverse() { reflect_horizontal(); reflect_vertical(); }
 
 public:
-	friend std::ostream& operator <<(std::ostream& out, const board& b) {
+	friend std::ostream& operator <<(std::ostream& out, const board& b){
 		out << "+------------------------+" << std::endl;
-		for (auto& row : b.tile) {
+		for(auto& row : b.tile){
 			out << "|" << std::dec;
-			for (auto t : row) out << std::setw(6) << ((1 << t) & -2u);
+			for(auto t : row){
+                    int k = (t > 3) ? (1 << (t-3) & -2u)*3 : t;
+                    out << std::setw(6) << k;
+			}
 			out << "|" << std::endl;
 		}
 		out << "+------------------------+" << std::endl;
